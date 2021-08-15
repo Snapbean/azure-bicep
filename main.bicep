@@ -8,6 +8,9 @@ var webAppName = 'app-${appName}'
 var functionHostingPlanName = 'plan-func-${appName}'
 var functionName = 'func-${appName}'
 
+// Azure built-in role to read and write storage table data
+var storageTableDataContributorRoleId = '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
+
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
   name: storageAccountName
   location: location
@@ -43,6 +46,9 @@ resource webApp 'Microsoft.Web/sites@2018-11-01' = {
   location: location
   tags: {
     'hidden-related:${resourceGroup().id}/providers/Microsoft.Web/serverfarms/${webAppHostingPlan.name}': 'Resource'
+  }
+  identity: {
+    type: 'SystemAssigned'
   }
   properties: {
     serverFarmId: webAppHostingPlan.id
@@ -115,5 +121,19 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
     appInsights
     functionHostingPlan
     storageAccount
+  ]
+}
+
+resource storageWebRoleAssignment 'Microsoft.Authorization/roleAssignments@2020-08-01-preview' = {
+  name: guid(webApp.name, storageAccount.name, storageTableDataContributorRoleId)
+  properties: {
+    principalId: webApp.identity.principalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageTableDataContributorRoleId)
+  }
+  scope: storageAccount
+  dependsOn: [
+    storageAccount
+    webApp
   ]
 }
