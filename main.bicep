@@ -7,6 +7,7 @@ var webAppHostingPlanName = 'plan-${appName}'
 var webAppName = 'app-${appName}'
 var functionHostingPlanName = 'plan-func-${appName}'
 var functionName = 'func-${appName}'
+var staticWebAppName = 'stapp-${appName}'
 
 // Azure built-in role to read and write storage table data
 var storageTableDataContributorRoleId = '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
@@ -136,4 +137,13 @@ resource storageWebRoleAssignment 'Microsoft.Authorization/roleAssignments@2020-
     storageAccount
     webApp
   ]
+}
+
+resource staticWebApp 'Microsoft.Web/staticSites@2021-01-15' = {
+  name: staticWebAppName
+  location: location
+  properties: {}
+  sku: {
+    name: 'Free'
+  }
 }
