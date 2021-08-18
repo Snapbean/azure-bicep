@@ -1,13 +1,35 @@
 param appName string
 param location string = resourceGroup().location
+param environment string
 
-var storageAccountName = 'st${appName}'
-var insightsName = 'appi-${appName}'
-var webAppHostingPlanName = 'plan-${appName}'
-var webAppName = 'app-${appName}'
-var functionHostingPlanName = 'plan-func-${appName}'
-var functionName = 'func-${appName}'
-var staticWebAppName = 'stapp-${appName}'
+@allowed([
+  'Standard_LRS'
+  'Standard_GRS'
+  'Standard_ZRS'
+  'Premium_LRS'
+])
+param storageSku string = 'Standard_LRS'
+
+@allowed([
+  'F1'
+  'B1'
+  'P1V2'
+])
+param webHostingPlanSku string
+
+@allowed([
+  'Free'
+  'Standard'
+])
+param staticWebSku string = 'Free'
+
+var storageAccountName = 'st${appName}${environment}'
+var insightsName = 'appi-${appName}-${environment}'
+var webAppHostingPlanName = 'plan-${appName}-${environment}'
+var webAppName = 'app-${appName}-${environment}'
+var functionHostingPlanName = 'plan-func-${appName}-${environment}'
+var functionName = 'func-${appName}-${environment}'
+var staticWebAppName = 'stapp-${appName}-${environment}'
 
 // Azure built-in role to read and write storage table data
 var storageTableDataContributorRoleId = '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
@@ -17,7 +39,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
   location: location
   kind: 'StorageV2'
   sku: {
-    name: 'Standard_LRS'
+    name: storageSku
   }
 }
 
@@ -38,7 +60,7 @@ resource webAppHostingPlan 'Microsoft.Web/serverfarms@2020-12-01' = {
   name: webAppHostingPlanName
   location: location
   sku: {
-    name: 'F1'
+    name: webHostingPlanSku
   }
 }
 
@@ -144,6 +166,6 @@ resource staticWebApp 'Microsoft.Web/staticSites@2021-01-15' = {
   location: location
   properties: {}
   sku: {
-    name: 'Free'
+    name: staticWebSku
   }
 }
